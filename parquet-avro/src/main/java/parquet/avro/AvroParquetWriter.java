@@ -31,7 +31,9 @@ import parquet.hadoop.metadata.CompressionCodecName;
  */
 public class AvroParquetWriter<T extends IndexedRecord> extends ParquetWriter<T> {
 
-  /** Create a new {@link AvroParquetWriter}.
+  /** 
+   * Create a new {@link AvroParquetWriter}.
+   * Deprecated - Use AvroParquetWriter(file, schema, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file
    * @param avroSchema
@@ -48,7 +50,9 @@ public class AvroParquetWriter<T extends IndexedRecord> extends ParquetWriter<T>
 	      compressionCodecName, blockSize, pageSize);
   }
 
-  /** Create a new {@link AvroParquetWriter}.
+  /**
+   * Create a new {@link AvroParquetWriter}.
+   * Deprecated - Use AvroParquetWriter(file, schema, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file The file name to write to.
    * @param avroSchema The schema to write with.
@@ -72,9 +76,10 @@ public class AvroParquetWriter<T extends IndexedRecord> extends ParquetWriter<T>
         .build());
   }
 
-  /** Create a new {@link AvroParquetWriter}. The default block size is 50 MB.The default
-   *  page size is 1 MB.  Default compression is no compression. (Inherited from {@link ParquetWriter})
-   *
+  /**
+   * Create a new {@link AvroParquetWriter}.
+   * Deprecated - Use AvroParquetWriter(file, schema, compressionCodec, conf, parquetProperties) instead.
+   * 
    * @param file The file name to write to.
    * @param avroSchema The schema to write with.
    * @throws IOException
@@ -85,7 +90,9 @@ public class AvroParquetWriter<T extends IndexedRecord> extends ParquetWriter<T>
 	  ParquetProperties.DEFAULT_BLOCK_SIZE, ParquetProperties.DEFAULT_PAGE_SIZE);
   }
 
-  /** Create a new {@link AvroParquetWriter}.
+  /**
+   * Create a new {@link AvroParquetWriter}.
+   * Deprecated - Use AvroParquetWriter(file, schema, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file The file name to write to.
    * @param avroSchema The schema to write with.

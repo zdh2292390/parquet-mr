@@ -36,8 +36,15 @@ public class ParquetWriter<T> implements Closeable {
 
   private final InternalParquetRecordWriter<T> writer;
   
+  /**
+   * Deprecated- Use {@link ParquetProperties.DEFAULT_BLOCK_SIZE} instead.
+   */
   @Deprecated
   public static final int DEFAULT_BLOCK_SIZE = ParquetProperties.DEFAULT_BLOCK_SIZE;
+
+  /**
+   * Deprecated- Use {@link ParquetProperties.DEFAULT_PAGE_SIZE} instead.
+   */
   @Deprecated
   public static final int DEFAULT_PAGE_SIZE = ParquetProperties.DEFAULT_PAGE_SIZE;
   
@@ -45,7 +52,7 @@ public class ParquetWriter<T> implements Closeable {
 
   /**
    * Create a new ParquetWriter.
-   * (with dictionary encoding enabled and validation off)
+   * Deprecated - Use ParquetWriter(file, writeSupport, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file the file to create
    * @param writeSupport the implementation to write a record to a RecordConsumer
@@ -69,6 +76,7 @@ public class ParquetWriter<T> implements Closeable {
 
   /**
    * Create a new ParquetWriter.
+   * Deprecated - Use ParquetWriter(file, writeSupport, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file the file to create
    * @param writeSupport the implementation to write a record to a RecordConsumer
@@ -94,6 +102,7 @@ public class ParquetWriter<T> implements Closeable {
 
   /**
    * Create a new ParquetWriter.
+   * Deprecated - Use ParquetWriter(file, writeSupport, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file the file to create
    * @param writeSupport the implementation to write a record to a RecordConsumer
@@ -131,6 +140,7 @@ public class ParquetWriter<T> implements Closeable {
 
   /**
    * Create a new ParquetWriter.
+   * Deprecated - Use ParquetWriter(file, writeSupport, compressionCodec, conf, parquetProperties) instead.
    *
    * Directly instantiates a Hadoop {@link org.apache.hadoop.conf.Configuration} which reads
    * configuration from the classpath.
@@ -210,6 +220,7 @@ public class ParquetWriter<T> implements Closeable {
 
   /**
    * Create a new ParquetWriter.
+   * Deprecated - Use ParquetWriter(file, writeSupport, compressionCodec, conf, parquetProperties) instead.
    *
    * @param file the file to create
    * @param writeSupport the implementation to write a record to a RecordConsumer
@@ -250,9 +261,8 @@ public class ParquetWriter<T> implements Closeable {
   }
 
   /**
-   * Create a new ParquetWriter.  The default block size is 50 MB.The default
-   * page size is 1 MB.  Default compression is no compression. Dictionary encoding is disabled.
-   *
+   * Create a new ParquetWriter. Defaults are used from {@link ParquetProperties}
+   * 
    * @param file the file to create
    * @param writeSupport the implementation to write a record to a RecordConsumer
    * @throws IOException
