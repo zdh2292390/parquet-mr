@@ -28,21 +28,27 @@ import static parquet.schema.PrimitiveType.PrimitiveTypeName.INT32;
 import static parquet.schema.Type.Repetition.OPTIONAL;
 import static parquet.schema.Type.Repetition.REQUIRED;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import parquet.Log;
 import parquet.column.ColumnDescriptor;
 import parquet.column.ColumnWriteStore;
 import parquet.column.ColumnWriter;
 import parquet.column.ParquetProperties;
 import parquet.column.ParquetProperties.WriterVersion;
+import parquet.column.statistics.Statistics;
 import parquet.column.impl.ColumnWriteStoreImpl;
 import parquet.column.page.PageReadStore;
 import parquet.column.page.mem.MemPageStore;
@@ -63,6 +69,7 @@ import parquet.schema.PrimitiveType.PrimitiveTypeName;
 import parquet.schema.Type;
 import parquet.schema.Type.Repetition;
 
+@RunWith(Parameterized.class)
 public class TestColumnIO {
   private static final Log LOG = Log.getLog(TestColumnIO.class);
 
@@ -136,6 +143,20 @@ public class TestColumnIO {
     "Name.end()",
     "endMessage()"
   };
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> data() throws IOException {
+    Object[][] data = {
+        { true },
+        { false } };
+    return Arrays.asList(data);
+  }
+
+  private boolean useDictionary;
+
+  public TestColumnIO(boolean useDictionary) {
+    this.useDictionary = useDictionary;
+  }
 
   @Test
   public void testSchema() {

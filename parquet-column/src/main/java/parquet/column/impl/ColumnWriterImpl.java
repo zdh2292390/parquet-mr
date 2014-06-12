@@ -21,24 +21,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 import parquet.Log;
-import parquet.bytes.BytesUtils;
 import parquet.column.ColumnDescriptor;
 import parquet.column.ColumnWriter;
 import parquet.column.ParquetProperties;
 import parquet.column.ParquetProperties.WriterVersion;
 import parquet.column.page.DictionaryPage;
 import parquet.column.page.PageWriter;
+import parquet.column.statistics.Statistics;
 import parquet.column.values.ValuesWriter;
-import parquet.column.values.boundedint.DevNullValuesWriter;
-import parquet.column.values.dictionary.DictionaryValuesWriter.PlainBinaryDictionaryValuesWriter;
-import parquet.column.values.dictionary.DictionaryValuesWriter.PlainDoubleDictionaryValuesWriter;
-import parquet.column.values.dictionary.DictionaryValuesWriter.PlainFloatDictionaryValuesWriter;
-import parquet.column.values.dictionary.DictionaryValuesWriter.PlainIntegerDictionaryValuesWriter;
-import parquet.column.values.dictionary.DictionaryValuesWriter.PlainLongDictionaryValuesWriter;
-import parquet.column.values.plain.BooleanPlainValuesWriter;
-import parquet.column.values.plain.FixedLenByteArrayPlainValuesWriter;
-import parquet.column.values.plain.PlainValuesWriter;
-import parquet.column.values.rle.RunLengthBitPackingHybridValuesWriter;
 import parquet.io.ParquetEncodingException;
 import parquet.io.api.Binary;
 
@@ -78,6 +68,9 @@ final class ColumnWriterImpl implements ColumnWriter {
     return new ParquetProperties(props);
   }
   
+
+  private Statistics statistics;
+
   @Deprecated
   public ColumnWriterImpl(
       ColumnDescriptor path,
@@ -102,14 +95,23 @@ final class ColumnWriterImpl implements ColumnWriter {
     this.pageSizeThreshold = parquetProperties.getPageSize();
     // initial check of memory usage. So that we have enough data to make an initial prediction
     this.valueCountForNextSizeCheck = INITIAL_COUNT_FOR_SIZE_CHECK;
+    resetStatistics();
 
     this.repetitionLevelColumn = ParquetProperties.getColumnDescriptorValuesWriter(path.getMaxRepetitionLevel(), initialSizePerCol);
     this.definitionLevelColumn = ParquetProperties.getColumnDescriptorValuesWriter(path.getMaxDefinitionLevel(), initialSizePerCol);
     this.dataColumn = parquetProperties.getValuesWriter(path, initialSizePerCol);
   }
 
+  private void initStatistics() {
+    this.statistics = Statistics.getStatsBasedOnType(this.path.getType());
+  }
+
   private void log(Object value, int r, int d) {
     LOG.debug(path + " " + value + " r:" + r + " d:" + d);
+  }
+
+  private void resetStatistics() {
+    this.statistics = Statistics.getStatsBasedOnType(this.path.getType());
   }
 
   /**
@@ -139,12 +141,41 @@ final class ColumnWriterImpl implements ColumnWriter {
     }
   }
 
+  private void updateStatisticsNumNulls() {
+    statistics.incrementNumNulls();
+  }
+
+  private void updateStatistics(int value) {
+    statistics.updateStats(value);
+  }
+
+  private void updateStatistics(long value) {
+    statistics.updateStats(value);
+  }
+
+  private void updateStatistics(float value) {
+    statistics.updateStats(value);
+  }
+
+  private void updateStatistics(double value) {
+   statistics.updateStats(value);
+  }
+
+  private void updateStatistics(Binary value) {
+   statistics.updateStats(value);
+  }
+
+  private void updateStatistics(boolean value) {
+   statistics.updateStats(value);
+  }
+
   private void writePage() {
     if (DEBUG) LOG.debug("write page");
     try {
       pageWriter.writePage(
           concat(repetitionLevelColumn.getBytes(), definitionLevelColumn.getBytes(), dataColumn.getBytes()),
           valueCount,
+          statistics,
           repetitionLevelColumn.getEncoding(),
           definitionLevelColumn.getEncoding(),
           dataColumn.getEncoding());
@@ -155,6 +186,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     definitionLevelColumn.reset();
     dataColumn.reset();
     valueCount = 0;
+    resetStatistics();
   }
 
   @Override
@@ -162,6 +194,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     if (DEBUG) log(null, repetitionLevel, definitionLevel);
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
+    updateStatisticsNumNulls();
     accountForValueWritten();
   }
 
@@ -171,6 +204,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
     dataColumn.writeDouble(value);
+    updateStatistics(value);
     accountForValueWritten();
   }
 
@@ -180,6 +214,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
     dataColumn.writeFloat(value);
+    updateStatistics(value);
     accountForValueWritten();
   }
 
@@ -189,6 +224,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
     dataColumn.writeBytes(value);
+    updateStatistics(value);
     accountForValueWritten();
   }
 
@@ -198,6 +234,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
     dataColumn.writeBoolean(value);
+    updateStatistics(value);
     accountForValueWritten();
   }
 
@@ -207,6 +244,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
     dataColumn.writeInteger(value);
+    updateStatistics(value);
     accountForValueWritten();
   }
 
@@ -216,6 +254,7 @@ final class ColumnWriterImpl implements ColumnWriter {
     repetitionLevelColumn.writeInteger(repetitionLevel);
     definitionLevelColumn.writeInteger(definitionLevel);
     dataColumn.writeLong(value);
+    updateStatistics(value);
     accountForValueWritten();
   }
 
