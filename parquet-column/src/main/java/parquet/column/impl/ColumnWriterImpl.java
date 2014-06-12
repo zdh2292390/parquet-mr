@@ -53,21 +53,6 @@ final class ColumnWriterImpl implements ColumnWriter {
   
   private int valueCount;
   private int valueCountForNextSizeCheck;
-  
-  private static ParquetProperties prepareParquetProperties(
-      int pageSizeThreshold,
-      int dictionaryPageSizeThreshold,
-      boolean enableDictionary,
-      WriterVersion writerVersion) {
-    Properties props = new Properties();
-    props.put(ParquetProperties.PAGE_SIZE, String.valueOf(pageSizeThreshold));
-    props.put(ParquetProperties.DICTIONARY_PAGE_SIZE, String.valueOf(dictionaryPageSizeThreshold));
-    props.put(ParquetProperties.ENABLE_DICTIONARY, String.valueOf(enableDictionary));
-    props.put(ParquetProperties.WRITER_VERSION, writerVersion.toString());
-    
-    return new ParquetProperties(props);
-  }
-  
 
   private Statistics statistics;
 
@@ -80,8 +65,13 @@ final class ColumnWriterImpl implements ColumnWriter {
       int dictionaryPageSizeThreshold,
       boolean enableDictionary,
       WriterVersion writerVersion) {
-    this(path, pageWriter, initialSizePerCol, 
-        prepareParquetProperties(pageSizeThreshold, dictionaryPageSizeThreshold, enableDictionary, writerVersion));
+    this(path, pageWriter, initialSizePerCol,
+        new ParquetProperties.ParquetPropertiesBuilder()
+          .setPageSize(pageSizeThreshold)
+          .setDictionaryPageSize(dictionaryPageSizeThreshold)
+          .setEnableDictionary(enableDictionary)
+          .setWriterVersion(writerVersion)
+          .build());
   }
 
   public ColumnWriterImpl(
