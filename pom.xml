@@ -90,6 +90,7 @@
     <previous.version>1.5.0</previous.version>
     <thrift.executable>thrift</thrift.executable>
     <scala.version>2.9.2</scala.version>
+    <wagon.version>2.4</wagon.version> <!-- https://issues.sonatype.org/browse/OSSRH-10975 -->
   </properties>
 
   <modules>
@@ -113,6 +114,16 @@
     <module>parquet-hive-bundle</module>
     <module>parquet-tools</module>
   </modules>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>  <!-- https://issues.sonatype.org/browse/OSSRH-10975 -->
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-provider-api</artifactId>
+        <version>${wagonVersion}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -183,6 +194,13 @@
   </reporting>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-http</artifactId>
+        <version>${wagon.version}</version>
+      </extension>
+    </extensions>
     <pluginManagement>
       <plugins>
         <plugin>
